@@ -7,15 +7,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        parchment: "var(--color-parchment, #f5f0e8)",
-        "parchment-dark": "var(--color-parchment-dark, #ede6d6)",
-        ink: "var(--color-ink, #1a1108)",
-        "ink-light": "var(--color-ink-light, #4a3f2f)",
-        burgundy: "var(--color-burgundy, #8b1a1a)",
+        parchment: "#f5f0e8",
+        "parchment-dark": "#ede6d6",
+        ink: "#1a1108",
+        "ink-light": "#4a3f2f",
+        burgundy: "#8b1a1a",
         "burgundy-dark": "#6b1414",
         "burgundy-light": "#cc4444",
         navy: "#2d4a6b",
-        cream: "var(--color-cream, #fffdf9)",
+        cream: "#fffdf9",
       },
       fontFamily: {
         serif: ["var(--font-playfair)", "Georgia", "serif"],
