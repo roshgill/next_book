@@ -4,16 +4,21 @@
 # macOS
 .DS_Store
 
-# Data — raw and processed files are not versioned
+# Data — raw files not versioned; processed catalog committed for Docker
 data/raw/
-data/processed/
+# data/processed/catalog_clean.parquet is committed (needed for Docker build)
 
 # Output data — exclude large files but track results/reports
 data/outputs/*.parquet
 data/outputs/*.npy
 
-# Model artifacts
-models/
+# Model artifacts are committed (needed for Docker build)
+# models/
+
+# Node / Next.js
+web/node_modules/
+web/.next/
+web/out/
 
 # Python
 __pycache__/

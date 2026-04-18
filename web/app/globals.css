@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-playfair: "Playfair Display", Georgia, serif;
+  --font-crimson: "Crimson Pro", Georgia, serif;
+  --font-lato: "Lato", system-ui, sans-serif;
+
+  --color-parchment: #f5f0e8;
+  --color-parchment-dark: #ede6d6;
+  --color-ink: #1a1108;
+  --color-ink-light: #4a3f2f;
+  --color-burgundy: #8b1a1a;
+  --color-cream: #fffdf9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
+  font-family: var(--font-crimson);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Subtle paper texture via CSS */
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(210,185,140,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(180,150,100,0.10) 0%, transparent 50%);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-parchment-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #b89070;
+  border-radius: 3px;
+}
+
+/* Page-in animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(210,195,170,0.4) 25%,
+    rgba(230,215,190,0.7) 50%,
+    rgba(210,195,170,0.4) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Staggered reveal for grid items */
+.stagger-item {
+  opacity: 0;
+  animation: fadeUp 0.45s ease forwards;
+}
+.stagger-item:nth-child(1)  { animation-delay: 0.03s; }
+.stagger-item:nth-child(2)  { animation-delay: 0.06s; }
+.stagger-item:nth-child(3)  { animation-delay: 0.09s; }
+.stagger-item:nth-child(4)  { animation-delay: 0.12s; }
+.stagger-item:nth-child(5)  { animation-delay: 0.15s; }
+.stagger-item:nth-child(6)  { animation-delay: 0.18s; }
+.stagger-item:nth-child(7)  { animation-delay: 0.21s; }
+.stagger-item:nth-child(8)  { animation-delay: 0.24s; }
+.stagger-item:nth-child(9)  { animation-delay: 0.27s; }
+.stagger-item:nth-child(10) { animation-delay: 0.30s; }
