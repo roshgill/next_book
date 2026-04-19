@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import os
+import traceback
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
@@ -34,20 +35,71 @@ WEB_OUT_DIR = Path("web/out")
 # Populated once at startup; all request handlers read from this dict.
 recommenders: dict[str, BookRecommender] = {}
 
+# Tracks per-model load errors so /api/health can surface them.
+recommender_errors: dict[str, str] = {}
+
+# Files that must exist for the recommenders to load successfully.
+_REQUIRED_FILES: list[Path] = [
+    CATALOG_PATH,
+    MODELS_DIR / "isbn_index.npy",
+    MODELS_DIR / "tfidf_matrix.npz",
+    MODELS_DIR / "embeddings.npy",
+    MODELS_DIR / "mlp.pt",
+    MODELS_DIR / "feature_scaler.pkl",
+]
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load all three recommenders into memory once at process start."""
+    logger.info("=== next-book API startup ===")
+    logger.info("Working directory: %s", Path.cwd())
+    logger.info("CATALOG_PATH: %s (exists=%s)", CATALOG_PATH, CATALOG_PATH.exists())
+    logger.info("MODELS_DIR:   %s (exists=%s)", MODELS_DIR, MODELS_DIR.exists())
+
+    # Check every required artifact up-front so missing files are obvious.
+    missing: list[Path] = []
+    for path in _REQUIRED_FILES:
+        exists = path.exists()
+        logger.info("  %-55s %s", str(path), "OK" if exists else "MISSING")
+        if not exists:
+            missing.append(path)
+
+    if missing:
+        logger.error(
+            "%d required file(s) are missing — recommenders will not load: %s",
+            len(missing),
+            [str(p) for p in missing],
+        )
+
     for model_name in VALID_MODELS:
         logger.info("Loading recommender: %s …", model_name)
-        recommenders[model_name] = BookRecommender(
-            model_name=model_name,
-            catalog_path=CATALOG_PATH,
-            models_dir=MODELS_DIR,
-        )
-        logger.info("Recommender ready: %s", model_name)
+        try:
+            recommenders[model_name] = BookRecommender(
+                model_name=model_name,
+                catalog_path=CATALOG_PATH,
+                models_dir=MODELS_DIR,
+            )
+            logger.info("Recommender ready: %s", model_name)
+        except Exception:
+            tb = traceback.format_exc()
+            recommender_errors[model_name] = tb
+            logger.error(
+                "Failed to load recommender '%s':\n%s", model_name, tb
+            )
+
+    loaded = list(recommenders.keys())
+    failed = list(recommender_errors.keys())
+    logger.info(
+        "Startup complete — loaded: %s | failed: %s",
+        loaded if loaded else "(none)",
+        failed if failed else "(none)",
+    )
+
     yield
+
     recommenders.clear()
+    recommender_errors.clear()
 
 
 app = FastAPI(title="next-book API", version="1.0.0", lifespan=lifespan)
@@ -128,7 +180,20 @@ def _get_rec(model_name: str) -> BookRecommender:
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "models_loaded": list(recommenders.keys())}
+    loaded = list(recommenders.keys())
+    failed = {name: tb.strip().splitlines()[-1] for name, tb in recommender_errors.items()}
+    all_ok = set(VALID_MODELS) == set(loaded) and not failed
+    return {
+        "status": "ok" if all_ok else "degraded",
+        "models_loaded": loaded,
+        "models_failed": failed,
+        "models_expected": list(VALID_MODELS),
+        "catalog_exists": CATALOG_PATH.exists(),
+        "models_dir_exists": MODELS_DIR.exists(),
+        "artifact_files": {
+            str(p): p.exists() for p in _REQUIRED_FILES
+        },
+    }
 
 
 @app.get("/api/search", response_model=SearchResponse)
