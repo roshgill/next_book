@@ -11,9 +11,7 @@ type ModelName = "naive" | "classical" | "deep";
 
 const EXAMPLE_QUERIES: { isbn: string; title: string }[] = [
   { isbn: "9780002005883", title: "Gilead" },
-
-  { isbn: "9780739360385", title: "Harry Potter and the Sorcerer's Stone" },
-  { isbn: "9780618002214", title: "The Hobbit" },
+  { isbn: "9780553580334", title: "Dune" },
 ];
 
 export default function Home() {

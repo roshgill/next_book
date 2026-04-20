@@ -102,6 +102,12 @@ Jupyter notebooks are only permitted inside `notebooks/`. They are not graded an
 - All changes must come in via PRs; PRs require a review before merge (self-review is acceptable for solo work but must be substantive).
 - Write meaningful PR descriptions and review comments — this is assessed.
 
+## Deployment Notes
+
+- **Railway start command**: must be set manually in the Railway UI as `/bin/sh -c "exec uvicorn api.main:app --host 0.0.0.0 --port $PORT"`. Railway runs Dockerfile CMD in exec form so `$PORT` never expands without the shell wrapper.
+- **Static file serving**: do NOT add a `/{full_path:path}` catchall route in `api/main.py`. It intercepts `/_next/static/css/*` requests and returns `index.html` instead of CSS, breaking all styling. `StaticFiles(html=True)` handles `/` correctly on its own.
+- **CORS**: `allow_origins` includes localhost ports 3000–3002 for local dev. Same-origin in prod so CORS is not enforced there.
+
 ## Evaluation Expectations
 
 Metric selection is justified in the Evaluation section above (Precision@10, ILD, Catalog Coverage). Quantitative comparison tables across the three models and visualizations (per-bucket precision chart from the experiment, confusion-style rec-overlap heatmap for error analysis) are expected in the final report.
