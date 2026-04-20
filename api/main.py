@@ -18,7 +18,6 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -53,7 +52,7 @@ app = FastAPI(title="next-book API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
     allow_methods=["GET"],
     allow_headers=["*"],
 )
@@ -171,18 +170,9 @@ def recommend(
 
 
 # ---------------------------------------------------------------------------
-# Serve Next.js static export (must be registered AFTER all /api/* routes)
+# Serve Next.js static export — registered LAST so /api/* routes take priority.
+# No catchall route: static export generates real .html files, no SPA fallback needed.
 # ---------------------------------------------------------------------------
-
-# Catchall: return index.html for any non-/api path that isn't a static file,
-# so the Next.js client-side router can handle it.
-@app.get("/{full_path:path}", include_in_schema=False)
-async def spa_fallback(full_path: str):
-    index = WEB_OUT_DIR / "index.html"
-    if index.exists():
-        return FileResponse(index)
-    return {"detail": "Frontend not built yet. Run: cd web && npm run build"}
-
 
 if WEB_OUT_DIR.exists():
     app.mount("/", StaticFiles(directory=WEB_OUT_DIR, html=True), name="web")
